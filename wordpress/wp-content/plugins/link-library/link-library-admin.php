@@ -618,10 +618,10 @@ class link_library_plugin_admin {
 		$genoptions = wp_parse_args( $genoptions, ll_reset_gen_settings( 'return' ) );
 		extract( $genoptions );
 
-		if ( ( $pagenow == 'post-new.php' && $_GET['post_type'] == 'link_library_links' ) ||
-			 ( $pagenow == 'edit-tags.php' && $_GET['post_type'] == 'link_library_links' && $_GET['taxonomy'] == 'link_library_category' ) ||
-			 ( $pagenow == 'edit-tags.php' && $_GET['post_type'] == 'link_library_links' && $_GET['taxonomy'] == 'link_library_tags' ) ||
-			 ( $pagenow == 'edit.php' && $_GET['post_type'] == 'link_library_links' ) ) {
+		if ( ( $pagenow == 'post-new.php' && isset( $_GET['post_type'] ) && $_GET['post_type'] == 'link_library_links' ) ||
+			 ( $pagenow == 'edit-tags.php' && isset( $_GET['post_type'] ) && $_GET['post_type'] == 'link_library_links' && isset( $_GET['taxonomy'] ) && $_GET['taxonomy'] == 'link_library_category' ) ||
+			 ( $pagenow == 'edit-tags.php' && isset( $_GET['post_type'] ) && $_GET['post_type'] == 'link_library_links' && $_GET['taxonomy'] == 'link_library_tags' ) ||
+			 ( $pagenow == 'edit.php' && isset( $_GET['post_type'] ) && $_GET['post_type'] == 'link_library_links' ) ) {
 			$catnames = get_terms( $genoptions['cattaxonomy'], array( 'hide_empty' => false ) );
 
 			if ( empty( $catnames ) ) {
@@ -1806,6 +1806,73 @@ wp_editor( $post->post_content, 'content', $editor_config );
 			} else {
 				$message = '3';
 			}
+		} elseif ( isset( $_POST['exportalllinksopml'] ) ) {
+			$upload_dir = wp_upload_dir();
+
+			if ( is_writable( $upload_dir['path'] ) ) {
+				$myFile = $upload_dir['path'] . "/LinksExport.opml";
+				$fh = fopen( $myFile, 'w' ) or die( "can't open file" );
+
+				$link_categories_query_args = array( );
+				$link_categories_query_args['hide_empty'] = true;
+
+				add_filter( 'get_terms', 'link_library_get_terms_filter_only_publish', 10, 3 );
+
+				$link_categories = get_terms( 'link_library_category', $link_categories_query_args );
+				
+				fwrite( $fh, '<?xml version="1.0"?' . ">\n" );
+				fwrite(	$fh, '<opml version="1.0">' . "\n" );
+				fwrite( $fh, '<head>' . "\n" );
+				fwrite( $fh, "\t" . '<title>' . sprintf( __( 'Links for %s' ), esc_attr( get_bloginfo( 'name', 'display' ) ) ) . '</title>' . "\n" );
+				fwrite( $fh, "\t" . '<dateCreated>' . gmdate( 'D, d M Y H:i:s' ) . ' GMT</dateCreated>' . "\n" );
+				fwrite( $fh, '</head>' . "\n" );
+				fwrite( $fh, '<body>' . "\n" );
+				
+				foreach ( (array) $link_categories as $link_category ) {
+					fwrite( $fh, "\t" . '<outline type="category" title="' . $link_category->name . '">' . "\n" );
+					
+					$link_query_args = array( 'post_type' => 'link_library_links', 'posts_per_page' => -1, 'post_status' => 'publish' );
+					$link_query_args['orderby']['title'] = 'ASC';
+
+					$link_query_args['tax_query'][] =
+						array(
+							'taxonomy' => 'link_library_category',
+							'field'    => 'term_id',
+							'terms'    => $link_category->term_id,
+							'include_children' => false
+						);
+	
+					$the_link_query = new WP_Query( $link_query_args );
+
+					if ( $the_link_query->have_posts() ) {
+						while ( $the_link_query->have_posts() ) {
+							$the_link_query->the_post();
+							$link_url = get_post_meta( get_the_ID(), 'link_url', true );
+							$link_rss = get_post_meta( get_the_ID(), 'link_rss', true );
+							$link_updated = get_post_meta( get_the_ID(), 'link_updated', true );
+
+							fwrite( $fh, "\t\t" . '<outline text="' . get_the_title() . '" type="link" xmlUrl="' . $link_rss . '" htmlUrl="' . $link_url . '">' . "\n" );
+						}
+					}
+					fwrite( $fh, "\t" . '</outline>' . "\n" );
+				}
+				fwrite( $fh, '</body>' . "\n" );
+				fwrite( $fh, '</opml>' . "\n" );
+
+				fclose( $fh );
+
+				if ( file_exists( $myFile ) ) {
+					header( 'Content-Description: File Transfer' );
+					header( 'Content-Type: application/octet-stream' );
+					header( 'Content-Disposition: attachment; filename=' . basename( $myFile ) );
+					header( 'Expires: 0' );
+					header( 'Cache-Control: must-revalidate' );
+					header( 'Pragma: public' );
+					header( 'Content-Length: ' . filesize( $myFile ) );
+					readfile( $myFile );
+					exit;
+				}
+			}		
 		} elseif ( isset( $_POST['exportallcategories'] ) ) {
 			$upload_dir = wp_upload_dir();
 
@@ -2339,7 +2406,7 @@ wp_editor( $post->post_content, 'content', $editor_config );
 
 			foreach ( array ( 'stylesheet' ) as $option_name ) {
 				if ( isset( $_POST[$option_name] ) ) {
-					$options[$option_name] = $this->validate_css( $_POST[$option_name] );
+					$options[$option_name] = $this->validate_css( sanitize_text_field( $_POST[$option_name] ) );
 				}
 			}
 
@@ -2698,7 +2765,7 @@ wp_editor( $post->post_content, 'content', $editor_config );
 			$genoptions = get_option( 'LinkLibraryGeneral' );
 			$genoptions = wp_parse_args( $genoptions, ll_reset_gen_settings( 'return' ) );
 
-			$genoptions['fullstylesheet'] = $this->validate_css( $_POST['fullstylesheet'] );
+			$genoptions['fullstylesheet'] = $this->validate_css( sanitize_text_field( $_POST['fullstylesheet'] ) );
 
 			update_option( 'LinkLibraryGeneral', $genoptions );
 			$message = 1;
@@ -3627,6 +3694,12 @@ function general_custom_fields_meta_box( $data ) {
 					</td>
 				</tr>
 				<tr>
+					<td><?php _e( 'Export all links in OPML format', 'link-library' ); ?></td>
+					<td>
+						<input class="button" type="submit" id="exportalllinksopml" name="exportalllinksopml" value="<?php _e( 'Export All Links in OPML format', 'link-library' ); ?>" />
+					</td>
+				</tr>
+				<tr>
 					<td><?php _e( 'Export all categories to a CSV file', 'link-library' ); ?></td>
 					<td>
 						<input class="button" type="submit" id="exportallcategories" name="exportallcategories" value="<?php _e( 'Export All Categories', 'link-library' ); ?>" />
@@ -3932,7 +4005,7 @@ function general_custom_fields_meta_box( $data ) {
 		<?php _e( 'If the stylesheet editor is empty after upgrading, reset to the default stylesheet using the button below or copy/paste your backup stylesheet into the editor.', 'link-library' ); ?>
 		<br /><br />
 
-		<textarea name='fullstylesheet' id='fancy-textarea' style='font-family:Courier' rows="30" cols="100"><?php echo stripslashes( $genoptions['fullstylesheet'] ); ?></textarea>
+		<textarea name='fullstylesheet' id='fancy-textarea' style='font-family:Courier' rows="30" cols="100"><?php echo stripslashes( sanitize_text_field( $genoptions['fullstylesheet'] ) ); ?></textarea>
 		<div>
 			<input type="submit" class="button button-primary submitstyle" name="submitstyle" value="<?php _e( 'Submit', 'link-library' ); ?>" /><span style='padding-left: 650px'><input type="submit" class="button button-primary resetstyle" name="resetstyle" value="<?php _e( 'Reset to default', 'link-library' ); ?>" /></span>
 		</div>
@@ -6007,7 +6080,7 @@ function general_custom_fields_meta_box( $data ) {
 		?>
 
 		<div style='padding-top:15px' id="ll-style" class="content-section">
-			<textarea name='stylesheet' id='fancy-textarea' style='font-family:Courier' rows="30" cols="100"><?php echo stripslashes( $options['stylesheet'] ); ?></textarea>
+			<textarea name='stylesheet' id='fancy-textarea' style='font-family:Courier' rows="30" cols="100"><?php echo stripslashes( sanitize_text_field( $options['stylesheet'] ) ); ?></textarea>
 		</div>
 
 	<?php }
@@ -7534,7 +7607,7 @@ function general_custom_fields_meta_box( $data ) {
 			<tr>
 				<td><?php _e( 'Telephone', 'link-library' ); ?></td>
 				<td>
-					<input type="text" id="link_telephone" name="link_telephone" style="width:100%" value="<?php echo $link_telephone; ?>" />
+					<input type="text" id="link_telephone" name="link_telephone" style="width:100%" value="<?php echo esc_html( $link_telephone ); ?>" />
 				</td>
 			</tr>
 			<tr>
@@ -7546,8 +7619,8 @@ function general_custom_fields_meta_box( $data ) {
 			<tr>
 				<td><?php _e( 'Reciprocal Link', 'link-library' ); ?></td>
 				<td>
-					<input type="text" id="link_reciprocal" name="link_reciprocal" style="width:100%" value="<?php echo $link_reciprocal; ?>" /> <?php if ( !empty( $link_reciprocal ) ) {
-						echo " <a href=" . esc_url( stripslashes( $link_reciprocal ) ) . ">" . __( 'Visit', 'link-library' ) . "</a>";
+					<input type="text" id="link_reciprocal" name="link_reciprocal" style="width:100%" value="<?php echo esc_html( $link_reciprocal ); ?>" /> <?php if ( !empty( $link_reciprocal ) ) {
+						echo " <a href=" . esc_url( stripslashes( esc_html( $link_reciprocal ) ) ) . ">" . __( 'Visit', 'link-library' ) . "</a>";
 					} ?></td>
 			</tr>
 			<tr>
@@ -7559,19 +7632,19 @@ function general_custom_fields_meta_box( $data ) {
 			<tr>
 				<td><?php _e( 'Submitter', 'link-library' ); ?></td>
 				<td>
-					<input type="text" id="link_submitter" name="link_submitter" style="width:100%" value="<?php echo $link_submitter; ?>" />
+					<input type="text" id="link_submitter" name="link_submitter" style="width:100%" value="<?php echo esc_html(  $link_submitter ); ?>" />
 				</td>
 			</tr>
 			<tr>
 				<td><?php _e( 'Submitter Name', 'link-library' ); ?></td>
 				<td>
-					<input type="text" id="link_submitter_name" name="link_submitter_name" style="width:100%" value="<?php echo $link_submitter_name; ?>" />
+					<input type="text" id="link_submitter_name" name="link_submitter_name" style="width:100%" value="<?php echo esc_html( $link_submitter_name ); ?>" />
 				</td>
 			</tr>
 			<tr>
 				<td><?php _e( 'Submitter E-mail', 'link-library' ); ?></td>
 				<td>
-					<input type="text" id="link_submitter_email" name="link_submitter_email" style="width:100%" value="<?php echo $link_submitter_email; ?>" />
+					<input type="text" id="link_submitter_email" name="link_submitter_email" style="width:100%" value="<?php echo ( $link_submitter_email ); ?>" />
 				</td>
 			</tr>
 			<tr>
@@ -7598,7 +7671,7 @@ function general_custom_fields_meta_box( $data ) {
 			<tr>
 				<td><?php _e( 'Rel Tags', 'link-library' ); ?></td>
 				<td>
-					<input type="text" style="width: 100%" id="link_rel" name="link_rel" value="<?php echo $link_rel; ?>" />
+					<input type="text" style="width: 100%" id="link_rel" name="link_rel" value="<?php echo esc_html( $link_rel ); ?>" />
 				</td>
 			</tr>
 			<tr>

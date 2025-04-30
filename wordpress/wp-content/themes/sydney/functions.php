@@ -53,10 +53,16 @@ function sydney_setup() {
 	add_image_size('sydney-mas-thumb', 480);
 
 	// This theme uses wp_nav_menu() in one location.
-	register_nav_menus( array(
+	$nav_menus = array(	
 		'primary' 	=> __( 'Primary Menu', 'sydney' ),
 		'mobile' 	=> __( 'Mobile menu (optional)', 'sydney' ),
-	) );
+	);
+
+	if ( class_exists( 'Sydney_Modules' ) && Sydney_Modules::is_module_active( 'hf-builder' ) ) {
+		$nav_menus['secondary'] = __( 'Secondary Menu', 'sydney' );
+	}
+
+	register_nav_menus( $nav_menus );
 
 	/*
 	 * Switch default core markup for search form, comment form, and comments
@@ -94,6 +100,15 @@ function sydney_setup() {
 
 	//Set the compare icon for YTIH button
 	update_option( 'yith_woocompare_button_text', sydney_get_svg_icon( 'icon-compare', false ) );
+
+	//Add theme support for appearance tools
+	add_theme_support( 'appearance-tools' );
+
+	//Add theme support for block template parts
+	$block_template_parts = get_theme_mod( 'enable_block_templates', 0 );
+	if ( $block_template_parts && Sydney_Modules::is_module_active( 'block-templates' ) ) {
+		add_theme_support( 'block-template-parts' );
+	}
 }
 endif; // sydney_setup
 add_action( 'after_setup_theme', 'sydney_setup' );
@@ -177,7 +192,7 @@ require get_template_directory() . "/widgets/contact-info.php";
  * Enqueue scripts and styles.
  */
 function sydney_admin_scripts() {
-	wp_enqueue_script( 'sydney-admin-functions', get_template_directory_uri() . '/js/admin-functions.js', array('jquery'),'20211006', true );
+	wp_enqueue_script( 'sydney-admin-functions', get_template_directory_uri() . '/js/admin-functions.js', array('jquery'),'20250317', true );
 	wp_localize_script( 'sydney-admin-functions', 'sydneyadm', array(
 		'fontawesomeUpdate' => array(
 			'confirmMessage' => __( 'Are you sure? Keep in mind this is a global change and you will need update your icons class names in all theme widgets and post types that use Font Awesome 4 icons.', 'sydney' ),
@@ -235,7 +250,7 @@ function sydney_scripts() {
 	wp_style_add_data( 'sydney-ie9', 'conditional', 'lte IE 9' );
 
 	if ( !$is_amp ) {
-		wp_enqueue_script( 'sydney-functions', get_template_directory_uri() . '/js/functions.min.js', array(), '20240307', true );
+		wp_enqueue_script( 'sydney-functions', get_template_directory_uri() . '/js/functions.min.js', array(), '20240822', true );
 		
 		//Enqueue hero slider script only if the slider is in use
 		$slider_home = get_theme_mod('front_header_type','nothing');
@@ -278,7 +293,7 @@ function sydney_scripts() {
 		wp_enqueue_script( 'comment-reply' );
 	}
 	
-	wp_enqueue_style( 'sydney-style-min', get_template_directory_uri() . '/css/styles.min.css', '', '20240307' );
+	wp_enqueue_style( 'sydney-style-min', get_template_directory_uri() . '/css/styles.min.css', '', '20250404' );
 
 	wp_enqueue_style( 'sydney-style', get_stylesheet_uri(), '', '20230821' );
 }
@@ -618,6 +633,11 @@ require get_template_directory() . '/inc/integrations/class-sydney-amp.php';
 require get_template_directory() . '/inc/customizer/upsell/class-customize.php';
 
 /**
+ * Style Book Toggle
+ */
+require get_template_directory() . '/inc/customizer/style-book/control/class-customizer-style-book.php';
+
+/**
  * Gutenberg
  */
 require get_template_directory() . '/inc/editor.php';
@@ -638,6 +658,11 @@ require get_template_directory() . '/inc/classes/class-sydney-svg-icons.php';
 require get_template_directory() . '/inc/notices/class-sydney-review.php';
 
 /**
+ * Campaign notice
+ */
+require get_template_directory() . '/inc/notices/class-sydney-campaign.php';
+
+/**
  * Schema
  */
 require get_template_directory() . '/inc/schema.php';
@@ -646,6 +671,13 @@ require get_template_directory() . '/inc/schema.php';
  * Theme update migration functions
  */
 require get_template_directory() . '/inc/theme-update.php';
+
+/**
+ * Modules
+ */
+require get_template_directory() . '/inc/modules/class-sydney-modules.php';
+require get_template_directory() . '/inc/modules/block-templates/class-sydney-block-templates.php';
+require get_template_directory() . '/inc/modules/hf-builder/class-header-footer-builder.php';
 
 /**
  * Theme dashboard.
@@ -744,4 +776,24 @@ if ( defined( 'SITEORIGIN_PANELS_VERSION' ) && ( isset($pagenow) && $pagenow == 
 <?php
 	}
 	add_action('admin_notices', 'sydney_toolbox_fa_update_admin_notice');
+}
+
+/**
+ * Sydney custom get template part
+ */
+function sydney_get_template_part( $slug, $name = null, $args = array() ) {
+	if ( version_compare( get_bloginfo( 'version' ), '5.5', '>=' ) ) {
+		return get_template_part( $slug, $name, $args );
+	} else {
+		extract($args);
+	
+		$templates = array();
+		$name = (string) $name;
+		if ( '' !== $name ) {
+			$templates[] = "{$slug}-{$name}.php";
+		}
+		$templates[] = "{$slug}.php";
+	 
+		return include( locate_template($templates) );
+	}
 }

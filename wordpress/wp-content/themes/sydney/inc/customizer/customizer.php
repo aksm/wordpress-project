@@ -81,9 +81,11 @@ function sydney_customize_register( $wp_customize ) {
     require get_template_directory() . '/inc/customizer/controls/class_sydney_text_control.php';
     //require get_template_directory() . '/inc/customizer/controls/class_sydney_tinymce_control.php';
     require get_template_directory() . '/inc/customizer/controls/toggle/class_sydney_toggle_control.php';
-    require get_template_directory() . '/inc/customizer/controls/accordion/class_sydney_accordion_control.php';    
+    require get_template_directory() . '/inc/customizer/controls/accordion/class_sydney_accordion_control.php';   
+    require get_template_directory() . '/inc/customizer/controls/dimensions/class_sydney_dimensions_control.php';
     require get_template_directory() . '/inc/customizer/controls/class_sydney_upsell_message.php';    
-
+    require get_template_directory() . '/inc/customizer/controls/class_sydney_section.php';
+    require get_template_directory() . '/inc/customizer/controls/color-group/class_sydney_color_group.php';
     require get_template_directory() . '/inc/customizer/controls/control-checkbox-multiple.php';
     require get_template_directory() . '/inc/customizer/controls/multiple-select/class-control-multiple-select.php';
     $wp_customize->register_control_type( 'Sydney_Select2_Custom_Control' 	);
@@ -95,6 +97,7 @@ function sydney_customize_register( $wp_customize ) {
      * Options
      */
     require get_template_directory() . '/inc/customizer/options/general.php';
+    
     if ( get_option( 'sydney-update-header' ) ) {
         require get_template_directory() . '/inc/customizer/options/header.php';
         require get_template_directory() . '/inc/customizer/options/header-mobile.php';
@@ -114,9 +117,15 @@ function sydney_customize_register( $wp_customize ) {
         require get_template_directory() . '/inc/customizer/options/woocommerce-single.php';
     }
     
-    //___Hero slider___//
+    /**
+     * Hero slider
+     */
     require get_template_directory() . '/inc/customizer/options/hero-area.php';
-         
+    
+    /**
+     * Load Style Book
+     */
+    require get_template_directory() . '/inc/customizer/style-book/class-sydney-style-book.php';
 
     if ( false == get_option( 'sydney-update-header' ) ) {
     //___Menu style___//
@@ -487,7 +496,7 @@ function sydney_customize_register( $wp_customize ) {
             '<p style="padding-bottom: 10px;border-bottom: 1px solid #d3d2d2">' . __(' 1. Documentation for Sydney can be found ', 'sydney') . '<a target="_blank" href="https://docs.athemes.com/category/8-sydney">here</a></p>' 
             . '<p style="padding-bottom: 10px;border-bottom: 1px solid #d3d2d2">' . __(' 2. All of our starter sites, both free and pro, can be previewed ', 'sydney') . '<a target="_blank" href="https://athemes.com/sydney-demos">here</a></p>'
             . '<p style="padding-bottom: 10px;border-bottom: 1px solid #d3d2d2">' .  __(' 3. You can receive free support on the community forums ', 'sydney') . '<a target="_blank" href="https://wordpress.org/support/theme/sydney/">here</a></p>'
-            .  __(' 4. Priority email support is available for our premium users. You can upgrade ', 'sydney') . '<a target="_blank" href="https://athemes.com/sydney-upgrade/?utm_source=theme_customizer_deep&utm_medium=sydney_customizer&utm_campaign=Sydney">here</a>'   
+            .  __(' 4. Priority email support is available for our premium users. You can upgrade ', 'sydney') . '<a target="_blank" href="https://athemes.com/sydney-upgrade/?utm_source=theme_customizer_theme_info&utm_medium=sydney_customizer&utm_campaign=Sydney">here</a>'   
                  
         )
     );
@@ -673,7 +682,7 @@ function sydney_sanitize_selects( $input, $setting ){
  * Binds JS handlers to make Theme Customizer preview reload changes asynchronously.
  */
 function sydney_customize_preview_js() {
-	wp_enqueue_script( 'sydney_customizer', get_template_directory_uri() . '/js/customizer.min.js', array( 'customize-preview' ), '20240307', true );
+	wp_enqueue_script( 'sydney_customizer', get_template_directory_uri() . '/js/customizer.min.js', array( 'customize-preview' ), '20250314', true );
 
     $post_type_array = sydney_get_posts_types_for_js();
 
@@ -692,8 +701,8 @@ require get_template_directory() . '/inc/customizer/controls/display-conditions/
  */
 function sydney_customize_footer_scripts() {
     
-    wp_enqueue_style( 'sydney-customizer-styles', get_template_directory_uri() . '/css/customizer.min.css', '', '20240307' );
-    wp_enqueue_script( 'sydney-customizer-scripts', get_template_directory_uri() . '/js/customize-controls.min.js', array( 'jquery', 'jquery-ui-core' ), '20240307', true );
+    wp_enqueue_style( 'sydney-customizer-styles', get_template_directory_uri() . '/css/customizer.min.css', '', '20240622' );
+    wp_enqueue_script( 'sydney-customizer-scripts', get_template_directory_uri() . '/js/customize-controls.min.js', array( 'jquery', 'jquery-ui-core' ), '20240604', true );
     
     $post_type_array = sydney_get_posts_types_for_js();
 

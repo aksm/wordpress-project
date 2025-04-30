@@ -3,13 +3,13 @@
 Plugin Name: Link Library
 Plugin URI: http://wordpress.org/extend/plugins/link-library/
 Description: Display links on pages with a variety of options
-Version: 7.7
+Version: 7.8.1
 Author: Yannick Lefebvre
 Author URI: http://ylefebvre.github.io/
 Text Domain: link-library
 
 A plugin for the blogging MySQL/PHP-based WordPress.
-Copyright 2024 Yannick Lefebvre
+Copyright 2025 Yannick Lefebvre
 
 Translations:
 French Translation courtesy of Michel G. et Luc Capronnier
@@ -737,7 +737,7 @@ if ( !function_exists( 'is_login' ) || ( function_exists( 'is_login' ) && !is_lo
 
 			require_once plugin_dir_path( __FILE__ ) . 'render-link-library-sc.php';
 		
-			return RenderLinkLibrary( $this, $genoptions, $options, $settings, false, 0, 0, true, false, $linkcount );	  
+			return RenderLinkLibrary( $linkcount, $this, $genoptions, $options, $settings, false, 0, 0, true, false );	  
 		}
 
 		function link_library_cats_block_callback( $attributes ) {
@@ -1036,7 +1036,7 @@ if ( !function_exists( 'is_login' ) || ( function_exists( 'is_login' ) && !is_lo
 				$genoptions = get_option( 'LinkLibraryGeneral' );
 				if ( isset( $genoptions['fullstylesheet'] ) ) {
 					echo "<style id='LinkLibraryStyle' type='text/css'>\n";
-					echo stripslashes( $genoptions['fullstylesheet'] );
+					echo stripslashes( sanitize_text_field( $genoptions['fullstylesheet'] ) );
 					echo "</style>\n";
 				}
 			}
@@ -1052,7 +1052,7 @@ if ( !function_exists( 'is_login' ) || ( function_exists( 'is_login' ) && !is_lo
 
 						if ( !empty( $options['stylesheet'] ) ) {
 							echo "<style id='LinkLibrarySettings" . $setting . "Style' type='text/css'>\n";
-							echo stripslashes( $options['stylesheet'] ) . "\n";
+							echo stripslashes( sanitize_text_field( $options['stylesheet'] ) ) . "\n";
 							echo "</style>\n";
 						}
 					}				
@@ -1922,7 +1922,7 @@ if ( !function_exists( 'is_login' ) || ( function_exists( 'is_login' ) && !is_lo
 
 			require_once plugin_dir_path( __FILE__ ) . 'render-link-library-sc.php';
 			$linkcount = 1;
-			$linklibraryoutput .= RenderLinkLibrary( $this, $genoptions, $options, intval( $settings ), false, 0, 0, true, false, $linkcount );
+			$linklibraryoutput .= RenderLinkLibrary( $linkcount, $this, $genoptions, $options, intval( $settings ), false, 0, 0, true, false );
 
 			if ( isset( $_POST['ajaxupdate'] ) ) {
 				echo $linklibraryoutput;

@@ -254,7 +254,6 @@ function sydney_callback_sticky_header() {
 	}
 }
 
-
 /**
  * Header elements
  */
@@ -377,6 +376,16 @@ function sydney_callback_menu_typography() {
 
 function sydney_callback_offcanvas_link_separator() {
 	$enable = get_theme_mod( 'mobile_menu_link_separator', 0 );
+
+	if ( $enable ) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+function sydney_block_templates_active_callback() {
+	$enable = get_theme_mod( 'enable_block_templates', 0 );
 
 	if ( $enable ) {
 		return true;

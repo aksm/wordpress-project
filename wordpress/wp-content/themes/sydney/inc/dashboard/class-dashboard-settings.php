@@ -47,6 +47,21 @@ function sydney_dashboard_settings()
 	$settings['upgrade_pro'] = 'https://athemes.com/sydney-upgrade?utm_source=theme_info&utm_medium=link&utm_campaign=Sydney';
 
 	//
+	// Support.
+	//
+	$settings['upgrade_pro_support'] = 'https://athemes.com/sydney-upgrade?utm_source=dashboard_upgrade_support&utm_medium=link&utm_campaign=Sydney';
+
+	//
+	// Free vs Pro upgrade link.
+	//
+	$settings['upgrade_pro_freevspro'] = 'https://athemes.com/sydney-upgrade?utm_source=dashboard_freevspro&utm_medium=link&utm_campaign=Sydney';
+
+	//
+	// Module upgrade link.
+	//
+	$settings['upgrade_pro_module'] = 'https://athemes.com/sydney-upgrade?utm_source=dashboard_module&utm_medium=link&utm_campaign=Sydney';	
+
+	//
 	// Promo.
 	//
 	$settings['promo_title']  = esc_html__('Upgrade to Pro', 'sydney');
@@ -68,11 +83,8 @@ function sydney_dashboard_settings()
 	//
 	// Support.
 	//
-	if ( $settings['has_pro'] ) {
-		$settings['support_link']     = 'https://athemes.com/support/';
-	} else {
-		$settings['support_link']     = 'https://wordpress.org/support/theme/sydney/';
-	}
+	$settings['support_link']     = 'https://athemes.com/support/';
+
 	$settings['support_pro_link'] = 'https://athemes.com/sydney-upgrade?utm_source=theme_support&utm_medium=button&utm_campaign=Sydney';
 
 	//
@@ -189,6 +201,43 @@ function sydney_dashboard_settings()
 		'link_url'   => add_query_arg('autofocus[control]', 'blogname', admin_url('customize.php')),
 	);
 
+	if ( Sydney_Modules::is_module_active( 'hf-builder' ) ) {
+
+		$settings['features'][] = array(
+			'type'       => 'free',
+			'title'      => esc_html__('Header Builder', 'sydney'),
+			'desc'       => esc_html__('Drag and drop header builder.', 'sydney'),
+			'link_label' => esc_html__('Customize', 'sydney'),
+			'link_url'   => add_query_arg('autofocus[section]', 'sydney_section_hb_wrapper', admin_url('customize.php')),
+		);
+	
+		$settings['features'][] = array(
+			'type'       => 'free',
+			'title'      => esc_html__('Footer Builder', 'sydney'),
+			'desc'       => esc_html__('Drag and drop footer builder.', 'sydney'),
+			'link_label' => esc_html__('Customize', 'sydney'),
+			'link_url'   => add_query_arg('autofocus[section]', 'sydney_section_fb_wrapper', admin_url('customize.php')),
+		);
+
+	} else {
+
+		$settings['features'][] = array(
+			'type'       => 'free',
+			'title'      => esc_html__('Header Options', 'sydney'),
+			'desc'       => esc_html__('Customize the header options for your theme.', 'sydney'),
+			'link_label' => esc_html__('Customize', 'sydney'),
+			'link_url'   => add_query_arg('autofocus[panel]', 'sydney_panel_header', admin_url('customize.php'))
+		);
+	
+		$settings['features'][] = array(
+			'type'       => 'free',
+			'title'      => esc_html__('Footer Credits', 'sydney'),
+			'desc'       => esc_html__('Customize the footer credits for your theme.', 'sydney'),
+			'link_label' => esc_html__('Customize', 'sydney'),
+			'link_url'   => add_query_arg('autofocus[section]', 'sydney_section_footer_credits', admin_url('customize.php'))
+		);		
+	}
+
 	$settings['features'][] = array(
 		'type'       => 'free',
 		'title'      => esc_html__('Typography', 'sydney'),
@@ -207,14 +256,6 @@ function sydney_dashboard_settings()
 
 	$settings['features'][] = array(
 		'type'       => 'free',
-		'title'      => esc_html__('Header Options', 'sydney'),
-		'desc'       => esc_html__('Customize the header options for your theme.', 'sydney'),
-		'link_label' => esc_html__('Customize', 'sydney'),
-		'link_url'   => add_query_arg('autofocus[panel]', 'sydney_header_panel', admin_url('customize.php'))
-	);
-	
-	$settings['features'][] = array(
-		'type'       => 'free',
 		'title'      => esc_html__('Buttons', 'sydney'),
 		'desc'       => esc_html__('Customize the buttons in your theme.', 'sydney'),
 		'link_label' => esc_html__('Customize', 'sydney'),
@@ -228,15 +269,6 @@ function sydney_dashboard_settings()
 		'link_label' => esc_html__('Customize', 'sydney'),
 		'link_url'   => add_query_arg('autofocus[panel]', 'sydney_panel_blog', admin_url('customize.php'))
 	);
-	
-	$settings['features'][] = array(
-		'type'       => 'free',
-		'title'      => esc_html__('Footer Credits', 'sydney'),
-		'desc'       => esc_html__('Customize the footer credits for your theme.', 'sydney'),
-		'link_label' => esc_html__('Customize', 'sydney'),
-		'link_url'   => add_query_arg('autofocus[section]', 'sydney_section_footer_credits', admin_url('customize.php'))
-	);
-	
 
 	//Start Pro Features
 
@@ -247,7 +279,7 @@ function sydney_dashboard_settings()
 		'desc'       => esc_html__('Customize the top bar of your theme.', 'sydney'),
 		'link_label' => esc_html__('Customize', 'sydney'),
 		'docs_link'   => 'https://docs.athemes.com/article/pro-how-to-configure-the-top-bar/',
-		'link_url'   => add_query_arg('autofocus[section]', 'sydney_contact_info', admin_url('customize.php'))
+		'link_url'   => add_query_arg('autofocus[section]', 'sydney_section_top_bar', admin_url('customize.php'))
 	);
 	$settings['features'][] = array(
 		'category'    => 'general',
@@ -304,9 +336,9 @@ function sydney_dashboard_settings()
 		'module'      => 'browser-tools',
 		'title'        => esc_html__('Browser Tools', 'sydney'),
 		'type'        => 'pro',
-		'link_url'    => add_query_arg('autofocus[section]', 'sydney_section_browser_tools', admin_url('customize.php')),
+		'link_url'    => add_query_arg('autofocus[section]', 'sydney_browser_tools', admin_url('customize.php')),
 		'link_label'  => esc_html__('Customize', 'sydney'),
-		'docs_link'   => 'https://docs.athemes.com/article/browser-tools/',
+		'docs_link'   => 'https://docs.athemes.com/article/pro-browser-tools-module/',
 		'desc'        => __('Scrollbar, mobile theme color, prevent text copy', 'sydney'),
 	);	
 	$settings['features'][] = array(
@@ -406,7 +438,7 @@ function sydney_dashboard_settings()
 		'type'        => 'pro',
 		'link_url'    => add_query_arg('autofocus[section]', 'sydney_section_live_chat', admin_url('customize.php')),
 		'link_label'  => esc_html__('Customize', 'sydney'),
-		'docs_link'   => 'https://docs.athemes.com/article/live-chat-in-sydney/',
+		'docs_link'   => 'https://docs.athemes.com/article/pro-live-chat-module-with-whatsapp-support/',
 		'desc'        => __('Live chat floating icon', 'sydney'),
 	);
 	$settings['features'][] = array(
@@ -416,7 +448,7 @@ function sydney_dashboard_settings()
 		'type'        => 'pro',
 		'link_url'    => add_query_arg('autofocus[section]', 'sydney_section_html_designer', admin_url('customize.php')),
 		'link_label'  => esc_html__('Customize', 'sydney'),
-		'docs_link'   => '#',
+		'docs_link'   => 'https://docs.athemes.com/article/forms-html-module/',
 		'desc'        => __('Design options for HTML elements and forms.', 'sydney'),
 	);		
 	$settings['features'][] = array(
@@ -432,7 +464,7 @@ function sydney_dashboard_settings()
 		'title'      => esc_html__('Google Maps', 'sydney'),
 		'desc'       => esc_html__('Customize Google Maps integration in your theme.', 'sydney'),
 		'link_label' => esc_html__('Customize', 'sydney'),
-		'link_url'   => add_query_arg('autofocus[section]', 'sydney_pro_maps', admin_url('customize.php'))
+		//'link_url'   => add_query_arg('autofocus[section]', 'sydney_pro_maps', admin_url('customize.php'))
 	);
 
 	$settings['features'][] = array(
@@ -450,6 +482,36 @@ function sydney_dashboard_settings()
 		'desc'       => esc_html__('Rename and present Sydney as your own.', 'sydney'),
 		'docs_link'  => 'https://docs.athemes.com/article/pro-white-label-sydney/',
 		'link_label' => esc_html__('Learn More', 'sydney'),
+	);
+
+	//Register the Block Templates module only if the function exists
+	if ( function_exists( 'block_template_part' ) ) {
+		$settings['features'][] = array(
+			'category'    => 'general',
+			'module'      => 'block-templates',
+			'title'        => esc_html__('Block Templates', 'sydney'),
+			'type'        => 'free',
+			'link_url'    => add_query_arg('autofocus[section]', 'sydney_block_templates', admin_url('customize.php')),
+			'link_label'  => esc_html__('Customize', 'sydney'),
+			'docs_link'   => 'https://docs.athemes.com/article/block-templates-module/',
+			'desc'        => __('Build headers, footers etc. with the site editor.', 'sydney'),
+		);	
+	}
+
+	// Useful plugins.
+	$settings['useful-plugins'] = array(
+		'merchant' => array(
+			'slug' => 'merchant',
+			'path' => 'merchant/merchant.php',
+			'name' => __( 'Merchant', 'sydney' ),
+			'img_url' => get_template_directory_uri() . '/images/admin/merchant-logo.png',
+		),
+		'athemes-addons-for-elementor-lite' => array(
+			'slug' => 'athemes-addons-for-elementor-lite',
+			'path' => 'athemes-addons-for-elementor-lite/athemes-addons-elementor.php',
+			'name' => __( 'aThemes Addons for Elementor', 'sydney' ),
+			'img_url' => get_template_directory_uri() . '/images/admin/athemes-addons-logo.png',
+		),
 	);
 
 	return $settings;
