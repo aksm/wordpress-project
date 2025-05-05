@@ -26,17 +26,17 @@ if ($status == 200) {
   $base_rest_url = $args['base_rest_url'];
   $pages = ceil($row_count / $results_per_page);
   $json_data = $args['json_data']['response']['rows'];
-  $row = 1;
+  $row = $start_offset;
   foreach($json_data as $item) {
     $json_item = json_encode($item, JSON_PRETTY_PRINT);
     echo '<div>'. $row . ': ' . $item['title'] . '</div>';
     $row++;
     //echo '<pre>' . $json_item .'</pre>';
   }
-  echo '<a href="' . $base_rest_url . '&start=' . $start . '">1</a>|';
-  for($i = 2;$i <= 10;$i++)
+  echo '<a href="' . $base_rest_url . '&start=0">1</a>|';
+  for($i = 1;$i <= 10;$i++)
   {
-     echo '<a href="' . $base_rest_url . '&start=' . $i * 10 - 1 . '">' . $i . '</a>';
+     echo '<a href="' . $base_rest_url . '&start=' . $i * 10 . '">' . $i + 1 . '</a>';
      if($i != $pages)
      {
          echo "|";
