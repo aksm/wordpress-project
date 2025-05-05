@@ -1,0 +1,29 @@
+<form role="search" method="get" action="/wp-json/ch/v1/search" class="search-form form">
+  <div class="control">
+    <label for="form-search-input">Search for</label>
+    <input id="form-search-input" type="search" title="Search for:" class="form-control" name="q" placeholder="Search..." required aria-required/>
+  </div>
+  <div class="control">
+    <label for="sort">Sort by</label><select id="sort" name="sort">
+      <option>
+        relevancy
+      </option>
+      <option>
+        id
+      </option>
+      <option>
+        newest
+      </option>
+      <option>
+        updated
+      </option>
+      <option>
+        random
+      </option>
+    </select>
+  </div>
+
+  <div class="control">
+    <button type="submit">Search API</button>
+  </div>
+</form>

@@ -1,0 +1,15 @@
+
+.is-style-outline > .wp-block-button__link,
+.wp-block-button__link.is-style-outline {
+	padding: var(--wp--custom--button-padding);
+}
+
+/* Match the editor */
+.wp-block-buttons > .wp-block-button {
+	margin-top: .5em;
+}
+
+.wp-block-button__link svg {
+	vertical-align: middle;
+	fill: currentcolor;
+}
