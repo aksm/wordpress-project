@@ -37,7 +37,7 @@ function search_external_api( $request ) {
   // Make API call
   $ch = curl_init();
   $api_key = SIOA_API_KEY;
-  curl_setopt($ch, CURLOPT_URL, 'https://api.si.edu/openaccess/api/v1.0/search?api_key=' . $api_key . '&q=' . urlencode($search_term) . '&sort=' . urlencode($sort));
+  curl_setopt($ch, CURLOPT_URL, 'https://api.si.edu/openaccess/api/v1.0/search?api_key=' . $api_key . '&q=' . urlencode($search_term) . '&start=' . urlencode($start) . '&sort=' . urlencode($sort));
   curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
   $response = curl_exec($ch);
   if($response === false)
